@@ -188,10 +188,10 @@ label.f input,label.f textarea,label.f select{display:block;width:100%;margin-to
       <label class="f">Codice buono (es. 12/26)<input id="f_codice" inputmode="text" placeholder="numero/anno" required></label>
       <div class="hint" id="f_hint"></div>
       <div class="row2">
-        <label class="f">Data emissione<input id="f_data" type="date" required></label>
-        <label class="f">Scadenza (+1 anno)<input id="f_scad" type="date" required></label>
+        <label class="f">Data emissione<input id="f_data" type="date"></label>
+        <label class="f">Scadenza (+1 anno)<input id="f_scad" type="date"></label>
       </div>
-      <label class="f">Nome cliente (chi fa il buono)<input id="f_cliente" autocapitalize="words" required></label>
+      <label class="f">Nome cliente (chi fa il buono)<input id="f_cliente" autocapitalize="words"></label>
       <label class="f">Telefono<input id="f_tel" type="tel" inputmode="tel"></label>
       <div class="row2">
         <label class="f">Valore €<input id="f_valore" inputmode="decimal" placeholder="0,00" required></label>
@@ -222,7 +222,7 @@ label.f input,label.f textarea,label.f select{display:block;width:100%;margin-to
   <div class="db">
     <div class="mic"><button id="micBtn" title="Parla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><div class="small" id="micStato">Tocca il microfono e detta uno o più buoni</div></div>
     <label class="f">Testo dettato (puoi correggerlo o scriverlo)<textarea id="dettTxt" rows="6"></textarea></label>
-    <div class="esempio"><b>Esempio:</b> «Buono 12 barra 25, del 3 marzo 2025, cliente Mario Rossi, telefono 333 1234567, valore 100 euro, residuo 50. <b>Prossimo buono</b> 4 barra 26, oggi, cliente Laura Bianchi, valore 80 euro.»<br>Puoi dire i buoni in qualsiasi ordine: l'app li mette in fila da sola.</div>
+    <div class="esempio"><b>Esempio:</b> «Buono 12 barra 25, del 3 marzo 2025, cliente Mario Rossi, telefono 333 1234567, valore 100 euro, residuo 50. <b>Prossimo buono</b> 4 barra 26, oggi, cliente Laura Bianchi, valore 80 euro.»<br>Puoi dire i buoni in qualsiasi ordine: l'app li mette in fila da sola. Se un dato non lo sai (nome o data), saltalo: il buono si salva lo stesso.</div>
   </div>
   <div class="df"><button class="btn ghost" id="dettPulisci">Cancella testo</button><button class="btn pri grow" id="dettAnalizza">Controlla i dati</button></div>
 </dialog>
@@ -367,7 +367,7 @@ function render() {
     const s = stato(b);
     html += `<button class="card ${STATI[s].cl}" data-id="${b.id}">
       <div class="c-cod">${esc(b.codice)}</div>
-      <div style="min-width:0"><div class="c-nome">${esc(b.cliente || '—')}</div><div class="c-sub lg">Emesso ${fmtData(b.dataEmissione)} · scade ${fmtData(b.scadenza)}</div><div class="c-sub sm">${fmtBreve(b.dataEmissione)} → ${fmtBreve(b.scadenza)}</div></div>
+      <div style="min-width:0"><div class="c-nome">${esc(b.cliente || '—')}</div>${b.dataEmissione ? `<div class="c-sub lg">Emesso ${fmtData(b.dataEmissione)} · scade ${fmtData(b.scadenza)}</div><div class="c-sub sm">${fmtBreve(b.dataEmissione)} → ${fmtBreve(b.scadenza)}</div>` : `<div class="c-sub">Data non indicata</div>`}</div>
       <div class="c-val"><div class="c-res">${eur.format(b.residuo)}</div><div class="c-tot">di ${eur.format(b.valore)}</div><span class="badge">${STATI[s].t}</span></div>
     </button>`;
   });
@@ -657,12 +657,12 @@ function controllaVoce(x, i) {
     if (trovaCodice(c.codice)) avv.push(['err', `Il ${c.codice} è già in archivio: non verrà salvato di nuovo`]);
     if (daRivedere.some((y, j) => j !== i && y.includi && leggiCodice(y.codice) && leggiCodice(y.codice).codice === c.codice)) avv.push(['err', 'Codice ripetuto nella lista']);
   }
-  if (!x.dataEmissione) avv.push(['err', 'Data di emissione mancante']);
+  if (!x.dataEmissione) avv.push(['warn', 'Data di emissione mancante: si può salvare e aggiungere dopo']);
   else if (c && +x.dataEmissione.slice(0, 4) !== c.anno) avv.push(['warn', `La data è del ${x.dataEmissione.slice(0, 4)} ma il codice è del ${c.anno}`]);
   const v = num(x.valore), rs = num(x.residuo);
   if (!(v > 0)) avv.push(['err', 'Valore mancante']);
   if (!isNaN(rs) && v > 0 && (rs < 0 || rs > v)) avv.push(['err', 'Il residuo non può superare il valore']);
-  if (!x.cliente) avv.push(['warn', 'Nome cliente mancante']);
+  if (!x.cliente) avv.push(['warn', 'Nome cliente mancante: si può salvare e aggiungere dopo']);
   return avv;
 }
 function disegnaRevisione() {
@@ -703,9 +703,9 @@ function salvaRevisione() {
     let rs = num(x.residuo); if (isNaN(rs)) rs = v;
     salvaBuono({
       id: uid(), codice: c.codice, numero: c.numero, anno: c.anno,
-      dataEmissione: x.dataEmissione, scadenza: piuUnAnno(x.dataEmissione),
+      dataEmissione: x.dataEmissione || '', scadenza: x.dataEmissione ? piuUnAnno(x.dataEmissione) : '',
       cliente: titolo(x.cliente || ''), telefono: (x.telefono || '').trim(), valore: v, residuo: r2(rs),
-      note: x.note || '', movimenti: rs < v ? [{ data: x.dataEmissione, importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }] : [],
+      note: x.note || '', movimenti: rs < v ? [{ data: x.dataEmissione || oggiISO(), importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }] : [],
       eliminato: false
     }, true);
     n++;
@@ -718,7 +718,13 @@ function salvaRevisione() {
 /* ---------------- microfono ---------------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, registra = false, baseTesto = '';
+const SU_TELEFONO = /Android|iPhone|iPad/i.test(navigator.userAgent);
 function avviaMic() {
+  if (SU_TELEFONO) {
+    const t = $('#dettTxt'); t.focus(); const n = t.value.length; t.setSelectionRange(n, n);
+    $('#micStato').innerHTML = '<b>Ora tocca il microfono 🎤 sulla tastiera</b> (in alto a destra o in basso) e parla con calma. Puoi fare pause: per continuare tocca di nuovo il microfono della tastiera.';
+    return;
+  }
   if (!SR) { $('#micStato').textContent = 'Questo browser non ha la dettatura: usa il microfono della tastiera dentro il riquadro di testo.'; $('#dettTxt').focus(); return; }
   if (registra) { fermaMic(); return; }
   rec = new SR(); rec.lang = 'it-IT'; rec.continuous = !/Android/i.test(navigator.userAgent); // su Android la modalità continua duplica il testo rec.interimResults = true;
@@ -743,7 +749,7 @@ function fermaMic() { registra = false; if (rec) try { rec.stop(); } catch (e) {
 function aggiornaMic() {
   $('#micBtn').classList.toggle('rec', registra);
   if (registra) $('#micStato').textContent = 'Ti ascolto… tocca di nuovo per fermare';
-  else if (!/Microfono|internet|browser/.test($('#micStato').textContent)) $('#micStato').textContent = 'Tocca il microfono e detta uno o più buoni';
+  else if (!SU_TELEFONO && !/Microfono|internet|browser/.test($('#micStato').textContent)) $('#micStato').textContent = 'Tocca il microfono e detta uno o più buoni';
 }
 
 /* ---------------- importa / esporta ---------------- */
@@ -847,7 +853,7 @@ $('#q').addEventListener('input', e => { ui.q = e.target.value; store(LS.ui, ui)
 $('#selAnno').addEventListener('change', e => { ui.anno = e.target.value === 'tutti' ? 'tutti' : +e.target.value; store(LS.ui, ui); render(); });
 $('#btnOrd').addEventListener('click', () => { ui.ordine = ui.ordine === 'asc' ? 'desc' : 'asc'; store(LS.ui, ui); render(); });
 $('#btnNuovo').addEventListener('click', () => apriForm());
-$('#btnDetta').addEventListener('click', () => { apri('#dlgDetta'); });
+$('#btnDetta').addEventListener('click', () => { apri('#dlgDetta'); if (SU_TELEFONO) $('#micStato').textContent = 'Tocca il pulsante rosso, poi il microfono della tastiera'; });
 $('#btnSync').addEventListener('click', () => sincronizza(true));
 $('#btnImp').addEventListener('click', apriImpostazioni);
 
@@ -867,16 +873,15 @@ $('#frm').addEventListener('submit', e => {
   const err = m => { $('#f_err').className = 'hint err'; $('#f_err').textContent = m; };
   const c = leggiCodice($('#f_codice').value); if (!c) return err('Codice non valido (es. 12/26)');
   if (trovaCodice(c.codice, inModifica)) return err(`Il buono ${c.codice} esiste già`);
-  const data = $('#f_data').value; if (!data) return err('Inserisci la data di emissione');
-  const scad = $('#f_scad').value || piuUnAnno(data);
+  const data = $('#f_data').value;
+  const scad = data ? ($('#f_scad').value || piuUnAnno(data)) : ($('#f_scad').value || '');
   const v = num($('#f_valore').value); if (!(v > 0)) return err('Inserisci il valore del buono');
   let rs = num($('#f_residuo').value); if (isNaN(rs)) rs = v;
   if (rs < 0 || rs > v) return err('Il residuo deve essere tra 0 e il valore');
-  if (!$('#f_cliente').value.trim()) return err('Inserisci il nome del cliente');
-  if (+data.slice(0, 4) !== c.anno && !confirm(`Il codice è del ${c.anno} ma la data è del ${data.slice(0, 4)}. Salvo lo stesso?`)) return;
+  if (data && +data.slice(0, 4) !== c.anno && !confirm(`Il codice è del ${c.anno} ma la data è del ${data.slice(0, 4)}. Salvo lo stesso?`)) return;
   const b = inModifica ? Object.assign({}, buoni[inModifica]) : { id: uid(), movimenti: [], eliminato: false };
   Object.assign(b, { codice: c.codice, numero: c.numero, anno: c.anno, dataEmissione: data, scadenza: scad, cliente: titolo($('#f_cliente').value), telefono: $('#f_tel').value.trim(), valore: r2(v), residuo: r2(rs), note: $('#f_note').value.trim() });
-  if (!inModifica && rs < v) b.movimenti = [{ data, importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }];
+  if (!inModifica && rs < v) b.movimenti = [{ data: data || oggiISO(), importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }];
   salvaBuono(b);
   chiudi('#dlgForm');
   toast(inModifica ? 'Modifiche salvate' : `Buono ${c.codice} salvato`);
@@ -907,7 +912,6 @@ $('#dettAnalizza').addEventListener('click', () => {
   fermaMic();
   const txt = $('#dettTxt').value.trim(); if (!txt) { toast('Detta o scrivi prima i dati del buono'); return; }
   const el = analizzaTesto(txt);
-  el.forEach(x => { const c = leggiCodice(x.codice); if (!x.dataEmissione && c && c.anno === new Date().getFullYear()) x.dataEmissione = oggiISO(); });
   apriRevisione(el);
 });
 $('#revBody').addEventListener('input', e => {

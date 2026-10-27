@@ -1,5 +1,5 @@
 // Buoni Regalo — service worker: fa funzionare l'app anche senza rete.
-const CACHE = 'buoni-regalo-v2.0.1';
+const CACHE = 'buoni-regalo-v2.0.2';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png',
