@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BUONI REGALO</title>
+<meta name="theme-color" content="#1F5C4A">
+<meta name="description" content="Archivio dei buoni regalo del negozio">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#F6F3EC; --card:#FFFFFF; --ink:#1D2420; --muted:#6B736E; --line:#E4DFD3;
+  --brand:#1F5C4A; --brand-2:#174A3B; --brand-soft:#E3EFEA; --gift:#C8243C; --gold:#E9A825;
+  --verde:#1E9E5A; --verde-soft:#E2F4EA; --arancio:#E07B00; --arancio-soft:#FDF0DC;
+  --rosso:#D23B3B; --rosso-soft:#FBE4E4; --grigio:#8A8F98; --grigio-soft:#ECEDEF;
+  --shadow:0 1px 2px rgba(20,30,25,.06),0 4px 14px rgba(20,30,25,.06);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#111614; --card:#1A211E; --ink:#ECEFEC; --muted:#9AA39E; --line:#2A3330;
+    --brand:#3E9C7D; --brand-2:#2F8167; --brand-soft:#1D2E28; --gift:#F0566C; --gold:#F2C14E;
+    --verde:#3CC47C; --verde-soft:#17301F; --arancio:#F4A23A; --arancio-soft:#33270F;
+    --rosso:#F06464; --rosso-soft:#371A1A; --grigio:#9AA0A8; --grigio-soft:#24292C;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,system-ui,-apple-system,sans-serif;font-size:16px;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+/* testata */
+header{background:var(--brand);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 0 14px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.top{display:flex;align-items:center;gap:12px}
+.top img{width:40px;height:40px;border-radius:10px}
+.top h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px;flex:1}
+.top h1 small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:1px}
+.icon-btn{background:rgba(255,255,255,.14);border:0;color:#fff;width:42px;height:42px;border-radius:12px;display:grid;place-items:center}
+.icon-btn svg{width:22px;height:22px}
+.sync{display:flex;align-items:center;gap:6px;font-size:12px;opacity:.9}
+.dot{width:9px;height:9px;border-radius:50%;background:#9be7c0;flex:none}
+.dot.off{background:#ffcf6b}.dot.err{background:#ff8a8a}.dot.loc{background:#cfd8d3}
+
+/* riepilogo */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px}
+.stat{background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);border:0;text-align:left;border-top:4px solid var(--c)}
+.stat b{display:block;font-size:22px;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.stat.on{outline:2px solid var(--c)}
+.tot{font-size:13px;color:var(--muted);margin:8px 2px 0}
+.tot b{color:var(--ink)}
+
+/* barra strumenti */
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.search{flex:1 1 220px;position:relative}
+.search input{width:100%;padding:11px 12px 11px 38px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.tools select,.tools .tbtn{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.tbtn{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tbtn svg{width:18px;height:18px}
+
+/* elenco */
+.list{display:flex;flex-direction:column;gap:8px;padding-bottom:120px}
+.card{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--card);border:0;border-left:6px solid var(--c);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);text-align:left;width:100%}
+.c-cod{font-weight:800;font-size:19px;min-width:64px;font-variant-numeric:tabular-nums}
+.c-nome{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.c-val{text-align:right}
+.c-res{font-weight:700;font-variant-numeric:tabular-nums}
+.c-tot{font-size:12px;color:var(--muted)}
+.c-sub.sm{display:none}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--cs);color:var(--c);margin-top:4px;white-space:nowrap}
+.s-verde{--c:var(--verde);--cs:var(--verde-soft)} .s-arancio{--c:var(--arancio);--cs:var(--arancio-soft)}
+.s-rosso{--c:var(--rosso);--cs:var(--rosso-soft)} .s-grigio{--c:var(--grigio);--cs:var(--grigio-soft)}
+.s-tutti{--c:var(--brand)}
+.empty{text-align:center;color:var(--muted);padding:50px 10px}
+.empty img{width:72px;opacity:.9}
+.yearsep{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin:10px 4px 0}
+.banner{background:var(--arancio-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px;display:flex;gap:10px;align-items:center}
+.banner button{margin-left:auto;border:0;background:var(--arancio);color:#fff;border-radius:10px;padding:7px 12px;font-weight:600}
+
+/* pulsanti flottanti */
+.fab{position:fixed;right:max(16px,calc(50vw - 474px));bottom:calc(18px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:6}
+.fab button{border:0;border-radius:18px;padding:14px 18px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.fab svg{width:22px;height:22px}
+.f-mic{background:var(--gift);color:#fff}
+.f-add{background:var(--brand);color:#fff}
+
+/* finestre */
+dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 20px));max-height:calc(100vh - 30px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,20,15,.45)}
+.dh{display:flex;align-items:center;gap:10px;padding:16px 18px 10px;position:sticky;top:0;background:var(--card);z-index:1}
+.dh h2{margin:0;font-size:19px;flex:1}
+.x{border:0;background:var(--grigio-soft);width:36px;height:36px;border-radius:10px;font-size:20px;line-height:1}
+.db{padding:4px 18px 18px}
+.df{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px 18px;border-top:1px solid var(--line)}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--grigio-soft)}
+.btn.pri{background:var(--brand);color:#fff}
+.btn.red{background:var(--rosso);color:#fff}
+.btn.ora{background:var(--arancio);color:#fff}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.grow{flex:1}
+.btn:disabled{opacity:.5}
+label.f{display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--muted)}
+label.f input,label.f textarea,label.f select{display:block;width:100%;margin-top:5px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:16px;color:var(--ink)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:13px;margin-top:6px;color:var(--muted);min-height:18px}
+.hint.ok{color:var(--verde)} .hint.err{color:var(--rosso)} .hint.warn{color:var(--arancio)}
+.big-cod{font-size:34px;font-weight:800;letter-spacing:.5px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin-top:12px;font-size:15px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600}
+.meter{height:10px;border-radius:99px;background:var(--grigio-soft);overflow:hidden;margin-top:14px}
+.meter i{display:block;height:100%;background:var(--c)}
+.hist{margin-top:14px;font-size:14px}
+.hist div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.quick button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 12px}
+.mic{display:flex;flex-direction:column;align-items:center;gap:8px;margin:6px 0 4px}
+.mic button{width:84px;height:84px;border-radius:50%;border:0;background:var(--gift);color:#fff;display:grid;place-items:center;box-shadow:0 6px 18px rgba(200,36,60,.35)}
+.mic button svg{width:38px;height:38px}
+.mic button.rec{animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,36,60,.55)}100%{box-shadow:0 0 0 22px rgba(200,36,60,0)}}
+.esempio{font-size:13px;color:var(--muted);background:var(--bg);border-radius:12px;padding:10px 12px;margin-top:10px}
+.rev{border:1px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:4px 12px 12px;margin-top:12px}
+.rev .rhead{display:flex;align-items:center;gap:8px;margin-top:8px}
+.rev .rhead b{font-size:18px;flex:1}
+.rev label.f{margin-top:8px}
+.rev label.f input{padding:9px 10px}
+.avv{font-size:13px;margin-top:8px}
+.avv div{margin-top:3px}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1D2420;color:#fff;padding:11px 16px;border-radius:12px;opacity:0;transition:.25s;z-index:50;font-size:14px;max-width:90vw;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sec{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:18px 0 4px}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:560px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .fab span{display:none}
+  .fab button{padding:16px}
+  .c-cod{font-size:17px;min-width:52px}
+  .c-sub.lg{display:none} .c-sub.sm{display:block}
+  .card{gap:10px;padding:12px}
+  .tools select{flex:1}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <img src="icon-192.png" alt="">
+    <h1>BUONI REGALO<small class="sync"><span class="dot loc" id="syncDot"></span><span id="syncTxt">Avvio…</span></small></h1>
+    <button class="icon-btn" id="btnSync" title="Aggiorna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+    <button class="icon-btn" id="btnImp" title="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner"></div>
+  <div class="stats" id="stats"></div>
+  <div class="tot" id="tot"></div>
+  <div class="tools">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Cerca codice, nome o telefono" autocomplete="off">
+    </div>
+    <select id="selAnno" aria-label="Anno"></select>
+    <button class="tbtn" id="btnOrd"></button>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+
+<div class="fab">
+  <button class="f-mic" id="btnDetta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Detta</span></button>
+  <button class="f-add" id="btnNuovo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Nuovo buono</span></button>
+</div>
+
+<!-- dettaglio -->
+<dialog id="dlgDett"><div class="dh"><h2>Buono</h2><button class="x" data-close>×</button></div><div class="db" id="dettBody"></div><div class="df" id="dettFoot"></div></dialog>
+
+<!-- nuovo / modifica -->
+<dialog id="dlgForm">
+  <form method="dialog" id="frm" autocomplete="off">
+    <div class="dh"><h2 id="frmTitle">Nuovo buono</h2><button type="button" class="x" data-close>×</button></div>
+    <div class="db">
+      <label class="f">Codice buono (es. 12/26)<input id="f_codice" inputmode="text" placeholder="numero/anno" required></label>
+      <div class="hint" id="f_hint"></div>
+      <div class="row2">
+        <label class="f">Data emissione<input id="f_data" type="date" required></label>
+        <label class="f">Scadenza (+1 anno)<input id="f_scad" type="date" required></label>
+      </div>
+      <label class="f">Nome cliente (chi fa il buono)<input id="f_cliente" autocapitalize="words" required></label>
+      <label class="f">Telefono<input id="f_tel" type="tel" inputmode="tel"></label>
+      <div class="row2">
+        <label class="f">Valore €<input id="f_valore" inputmode="decimal" placeholder="0,00" required></label>
+        <label class="f">Residuo €<input id="f_residuo" inputmode="decimal" placeholder="= valore"></label>
+      </div>
+      <label class="f">Note (facoltative)<input id="f_note"></label>
+      <div class="hint" id="f_err"></div>
+    </div>
+    <div class="df"><button type="button" class="btn ghost" data-close>Annulla</button><button type="submit" class="btn pri grow">Salva buono</button></div>
+  </form>
+</dialog>
+
+<!-- utilizzo -->
+<dialog id="dlgUso">
+  <div class="dh"><h2>Usa buono <span id="usoCod"></span></h2><button class="x" data-close>×</button></div>
+  <div class="db">
+    <div class="small">Disponibile: <b id="usoDisp"></b></div>
+    <label class="f">Importo usato oggi €<input id="usoImp" inputmode="decimal"></label>
+    <div class="quick" id="usoQuick"></div>
+    <div class="hint" id="usoHint"></div>
+  </div>
+  <div class="df"><button class="btn ghost" data-close>Annulla</button><button class="btn pri grow" id="usoOk">Conferma utilizzo</button></div>
+</dialog>
+
+<!-- dettatura -->
+<dialog id="dlgDetta">
+  <div class="dh"><h2>Inserimento a voce</h2><button class="x" data-close>×</button></div>
+  <div class="db">
+    <div class="mic"><button id="micBtn" title="Parla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><div class="small" id="micStato">Tocca il microfono e detta uno o più buoni</div></div>
+    <label class="f">Testo dettato (puoi correggerlo o scriverlo)<textarea id="dettTxt" rows="6"></textarea></label>
+    <div class="esempio"><b>Esempio:</b> «Buono 12 barra 25, del 3 marzo 2025, cliente Mario Rossi, telefono 333 1234567, valore 100 euro, residuo 50. <b>Prossimo buono</b> 4 barra 26, oggi, cliente Laura Bianchi, valore 80 euro.»<br>Puoi dire i buoni in qualsiasi ordine: l'app li mette in fila da sola.</div>
+  </div>
+  <div class="df"><button class="btn ghost" id="dettPulisci">Cancella testo</button><button class="btn pri grow" id="dettAnalizza">Controlla i dati</button></div>
+</dialog>
+
+<!-- revisione -->
+<dialog id="dlgRev">
+  <div class="dh"><h2 id="revTitle">Controlla prima di salvare</h2><button class="x" data-close>×</button></div>
+  <div class="db" id="revBody"></div>
+  <div class="df"><button class="btn ghost" data-close>Indietro</button><button class="btn pri grow" id="revSalva">Salva</button></div>
+</dialog>
+
+<!-- impostazioni -->
+<dialog id="dlgImp">
+  <div class="dh"><h2>Impostazioni</h2><button class="x" data-close>×</button></div>
+  <div class="db">
+    <div class="sec">Archivio condiviso</div>
+    <div class="small">L'indirizzo dell'archivio è già inserito: scrivi solo il <b>PIN</b> e premi «Salva e collega». Va fatto una volta su ogni PC e telefono.</div>
+    <label class="f">Indirizzo archivio<input id="cfgUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+    <label class="f">PIN<input id="cfgPin" type="password" autocomplete="off"></label>
+    <div class="hint" id="cfgHint"></div>
+    <div class="quick"><button id="cfgSalva" class="btn pri">Salva e collega</button><button id="cfgScolleg" class="btn">Scollega</button></div>
+    <div class="sec">Installazione</div>
+    <div class="small" id="instTxt">Se il browser lo consente, puoi installare l'app con il pulsante qui sotto.</div>
+    <div class="quick"><button id="btnInstalla" class="btn ora">Installa l'app su questo dispositivo</button></div>
+    <div class="sec">Copie e importazione</div>
+    <div class="quick">
+      <button id="expCsv" class="btn">Esporta Excel (CSV)</button>
+      <button id="expJson" class="btn">Copia di sicurezza</button>
+      <button id="impBtn" class="btn">Importa da file</button>
+      <input type="file" id="impFile" accept=".csv,.json,text/csv,application/json" hidden>
+    </div>
+    <div class="small" style="margin-top:8px">Importa da CSV con colonne: Codice; Data emissione; Cliente; Telefono; Valore; Residuo (anche da Excel, salvato come CSV). Prima del salvataggio vedrai il riepilogo da controllare.</div>
+    <div class="sec">Informazioni</div>
+    <div class="small">BUONI REGALO versione <span id="ver"></span></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const VERSIONE = '2.0';
+const LS = { buoni: 'br2_buoni', coda: 'br2_coda', cfg: 'br2_cfg', ui: 'br2_ui' };
+const $ = s => document.querySelector(s);
+const eur = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+let buoni = load(LS.buoni, {});      // id -> buono (compresi eliminati)
+let coda = load(LS.coda, {});        // modifiche non ancora inviate all'archivio
+const ARCHIVIO = 'https://script.google.com/macros/s/AKfycbyjfGNhSyx8bmVm_tOSYA5qpRJ6PtzC5BhNMDKb0sMFWTYulUv1qVFCZwtGHqExgQTPlw/exec';
+let cfg = load(LS.cfg, { url: '', pin: '' });
+let ui = Object.assign({ ordine: 'asc', anno: 'tutti', stato: 'tutti', q: '' }, load(LS.ui, {}));
+
+/* ---------------- date ---------------- */
+const pad = n => String(n).padStart(2, '0');
+const isoDi = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const oggiISO = () => isoDi(new Date());
+function isoValida(y, m, d) { const t = new Date(y, m - 1, d); return t.getFullYear() == y && t.getMonth() == m - 1 && t.getDate() == d; }
+function piuUnAnno(iso) {
+  if (!iso) return '';
+  let [y, m, d] = iso.split('-').map(Number); y++;
+  if (m === 2 && d === 29) d = 28;
+  return y + '-' + pad(m) + '-' + pad(d);
+}
+const fmtData = iso => { if (!iso) return '—'; const [y, m, d] = iso.split('-'); return d + '/' + m + '/' + y; };
+const fmtBreve = iso => iso ? fmtData(iso).slice(0, 6) + iso.slice(2, 4) : '—';
+const num = v => { if (v === '' || v == null) return NaN; return Number(String(v).replace(/\s|€/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); };
+const r2 = n => Math.round(n * 100) / 100;
+
+/* ---------------- codice buono ---------------- */
+function leggiCodice(txt) {
+  if (txt == null) return null;
+  const s = String(txt).trim().toLowerCase()
+    .replace(/\s*(barra|slash|fratto|diviso)\s*/g, '/')
+    .replace(/^(buono|n[°º.]?|nr\.?|numero)\s*/, '');
+  const m = s.match(/^(\d{1,4})\s*[\/\-\\.\s]\s*(\d{2}|\d{4})$/);
+  if (!m) return null;
+  const numero = parseInt(m[1], 10);
+  let anno = parseInt(m[2], 10); if (anno < 100) anno += 2000;
+  if (numero < 1 || anno < 2000 || anno > 2099) return null;
+  return { numero, anno, codice: numero + '/' + String(anno).slice(-2) };
+}
+const chiave = b => b.anno * 100000 + b.numero;
+const attivi = () => Object.values(buoni).filter(b => !b.eliminato);
+const trovaCodice = (codice, escludiId) => attivi().find(b => b.codice === codice && b.id !== escludiId);
+function prossimoNumero(anno) {
+  const nn = attivi().filter(b => b.anno === anno).map(b => b.numero);
+  return (nn.length ? Math.max(...nn) : 0) + 1;
+}
+
+/* ---------------- stato e colori ---------------- */
+const STATI = {
+  valido:   { t: 'Valido',       cl: 's-verde',   pl: 'Validi' },
+  parziale: { t: 'Uso parziale', cl: 's-arancio', pl: 'Parziali' },
+  usato:    { t: 'Consumato',    cl: 's-rosso',   pl: 'Consumati' },
+  scaduto:  { t: 'Scaduto',      cl: 's-grigio',  pl: 'Scaduti' }
+};
+function stato(b) {
+  if (b.residuo <= 0.004) return 'usato';
+  if (b.scadenza && b.scadenza < oggiISO()) return 'scaduto';
+  if (b.residuo < b.valore - 0.004) return 'parziale';
+  return 'valido';
+}
+
+/* ---------------- interfaccia: elenco ---------------- */
+function render() {
+  const tutti = attivi();
+  const anni = [...new Set(tutti.map(b => b.anno))].sort((a, b) => b - a);
+  if (ui.anno !== 'tutti' && !anni.includes(+ui.anno)) ui.anno = 'tutti';
+  $('#selAnno').innerHTML = '<option value="tutti">Tutti gli anni</option>' +
+    anni.map(a => `<option value="${a}">Anno ${a}</option>`).join('');
+  $('#selAnno').value = String(ui.anno);
+  $('#btnOrd').innerHTML = ui.ordine === 'asc'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M3 16l4 4 4-4M14 6h7M14 12h5M14 18h3"/></svg>Dal più vecchio'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 20V4M3 8l4-4 4 4M14 6h3M14 12h5M14 18h7"/></svg>Dal più nuovo';
+
+  const perAnno = tutti.filter(b => ui.anno === 'tutti' || b.anno === +ui.anno);
+  const conta = { valido: 0, parziale: 0, usato: 0, scaduto: 0 };
+  let daSpendere = 0;
+  perAnno.forEach(b => { const s = stato(b); conta[s]++; if (s === 'valido' || s === 'parziale') daSpendere += b.residuo; });
+  $('#stats').innerHTML = Object.keys(STATI).map(k =>
+    `<button class="stat ${STATI[k].cl} ${ui.stato === k ? 'on' : ''}" data-stato="${k}"><b>${conta[k]}</b><span>${STATI[k].pl}</span></button>`).join('');
+  $('#tot').innerHTML = `<b>${perAnno.length}</b> buoni${ui.anno !== 'tutti' ? ' del ' + ui.anno : ''} · ancora da spendere <b>${eur.format(daSpendere)}</b>` +
+    (ui.stato !== 'tutti' ? ` · filtro: ${STATI[ui.stato].pl} <a href="#" id="togliFiltro">mostra tutti</a>` : '');
+
+  const q = ui.q.trim().toLowerCase();
+  const qd = q.replace(/\D/g, '');
+  let lista = perAnno.filter(b => ui.stato === 'tutti' || stato(b) === ui.stato)
+    .filter(b => !q || b.codice.includes(q) || (b.cliente || '').toLowerCase().includes(q) || (qd.length >= 3 && (b.telefono || '').replace(/\D/g, '').includes(qd)));
+  lista.sort((a, b) => ui.ordine === 'asc' ? chiave(a) - chiave(b) : chiave(b) - chiave(a));
+
+  if (!lista.length) {
+    $('#list').innerHTML = `<div class="empty"><img src="icon-192.png" alt=""><p>${tutti.length ? 'Nessun buono corrisponde alla ricerca.' : 'Ancora nessun buono.<br>Usa <b>Nuovo buono</b> o <b>Detta</b> per iniziare.'}</p></div>`;
+    return;
+  }
+  let html = '', annoPrec = null;
+  lista.forEach(b => {
+    if (ui.anno === 'tutti' && b.anno !== annoPrec) { html += `<div class="yearsep">Anno ${b.anno}</div>`; annoPrec = b.anno; }
+    const s = stato(b);
+    html += `<button class="card ${STATI[s].cl}" data-id="${b.id}">
+      <div class="c-cod">${esc(b.codice)}</div>
+      <div style="min-width:0"><div class="c-nome">${esc(b.cliente || '—')}</div><div class="c-sub lg">Emesso ${fmtData(b.dataEmissione)} · scade ${fmtData(b.scadenza)}</div><div class="c-sub sm">${fmtBreve(b.dataEmissione)} → ${fmtBreve(b.scadenza)}</div></div>
+      <div class="c-val"><div class="c-res">${eur.format(b.residuo)}</div><div class="c-tot">di ${eur.format(b.valore)}</div><span class="badge">${STATI[s].t}</span></div>
+    </button>`;
+  });
+  $('#list').innerHTML = html;
+}
+
+/* ---------------- salvataggio e sincronizzazione ---------------- */
+function persisti() { store(LS.buoni, buoni); store(LS.coda, coda); }
+function salvaBuono(b, silenzioso) {
+  b.modificato = Date.now();
+  if (!b.creato) b.creato = b.modificato;
+  buoni[b.id] = b; coda[b.id] = b;
+  persisti();
+  if (!silenzioso) { render(); sincronizza(); }
+}
+
+let sincInCorso = false;
+function statoSync(tipo, testo) {
+  $('#syncDot').className = 'dot ' + tipo;
+  $('#syncTxt').textContent = testo;
+}
+async function chiamaArchivio(dati) {
+  const res = await fetch(cfg.url, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(Object.assign({ pin: cfg.pin }, dati))
+  });
+  const txt = await res.text();
+  let j; try { j = JSON.parse(txt); } catch (e) { throw new Error('Risposta non valida: controlla che l\'archivio sia pubblicato per "Chiunque"'); }
+  if (!j.ok) throw new Error(j.errore || 'Errore archivio');
+  return j;
+}
+function unisci(remoti) {
+  const visti = {};
+  remoti.forEach(r => {
+    visti[r.id] = 1;
+    if (coda[r.id]) return;                      // ho una modifica locale non ancora inviata
+    buoni[r.id] = normalizza(r);
+  });
+  // ciò che c'è qui ma non nell'archivio (e non è in attesa) viene tolto: è stato rimosso altrove
+  Object.keys(buoni).forEach(id => { if (!visti[id] && !coda[id]) delete buoni[id]; });
+}
+function normalizza(b) {
+  return Object.assign({}, b, {
+    numero: +b.numero || 0, anno: +b.anno || 0,
+    valore: r2(num(b.valore) || 0), residuo: r2(num(b.residuo) || 0),
+    telefono: String(b.telefono || ''), note: String(b.note || ''),
+    movimenti: Array.isArray(b.movimenti) ? b.movimenti : [],
+    modificato: +b.modificato || 0, creato: +b.creato || 0, eliminato: !!b.eliminato
+  });
+}
+async function sincronizza(manuale) {
+  const inAttesa = Object.keys(coda).length;
+  if (!cfg.url) { statoSync('loc', 'Solo su questo dispositivo'); renderBanner(); return; }
+  if (sincInCorso) return;
+  if (!navigator.onLine) { statoSync('off', inAttesa ? `Senza rete · ${inAttesa} da inviare` : 'Senza rete'); return; }
+  sincInCorso = true;
+  statoSync('off', 'Sincronizzo…');
+  try {
+    let j;
+    const inviati = Object.values(coda);
+    if (inviati.length) {
+      j = await chiamaArchivio({ azione: 'salva', buoni: inviati });
+      inviati.forEach(b => { if (coda[b.id] && coda[b.id].modificato === b.modificato) delete coda[b.id]; });
+    } else {
+      j = await chiamaArchivio({ azione: 'elenco' });
+    }
+    unisci(j.buoni || []);
+    persisti();
+    const ora = new Date();
+    statoSync('', `Sincronizzato alle ${pad(ora.getHours())}:${pad(ora.getMinutes())}`);
+    if (manuale) toast('Archivio aggiornato');
+  } catch (e) {
+    const n = Object.keys(coda).length;
+    statoSync('err', n ? `Non sincronizzato · ${n} in attesa` : 'Archivio non raggiungibile');
+    if (manuale) toast(e.message);
+  } finally {
+    sincInCorso = false;
+    render(); renderBanner();
+  }
+}
+function renderBanner() {
+  $('#banner').innerHTML = cfg.url ? '' :
+    `<div class="banner"><span>I buoni sono salvati solo su questo dispositivo. Collega l'archivio condiviso per vederli anche sugli altri.</span><button id="banImp">Collega</button></div>`;
+}
+
+/* ---------------- dettaglio ---------------- */
+let corrente = null;
+function apriDettaglio(id) {
+  const b = buoni[id]; if (!b) return; corrente = id;
+  const s = stato(b), st = STATI[s];
+  const perc = b.valore > 0 ? Math.max(0, Math.min(100, b.residuo / b.valore * 100)) : 0;
+  const tel = (b.telefono || '').replace(/[^\d+]/g, '');
+  $('#dettBody').className = 'db ' + st.cl;
+  $('#dettBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px"><div class="big-cod">${esc(b.codice)}</div><span class="badge" style="font-size:13px">${st.t}</span></div>
+    <dl class="kv">
+      <dt>Emissione</dt><dd>${fmtData(b.dataEmissione)}</dd>
+      <dt>Scadenza</dt><dd>${fmtData(b.scadenza)}${s === 'scaduto' ? ' (scaduto)' : ''}</dd>
+      <dt>Cliente</dt><dd>${esc(b.cliente || '—')}</dd>
+      <dt>Telefono</dt><dd>${tel ? `<a href="tel:${esc(tel)}">${esc(b.telefono)}</a>` : '—'}</dd>
+      <dt>Valore</dt><dd>${eur.format(b.valore)}</dd>
+      <dt>Residuo</dt><dd style="color:var(--c)">${eur.format(b.residuo)}</dd>
+      ${b.note ? `<dt>Note</dt><dd>${esc(b.note)}</dd>` : ''}
+    </dl>
+    <div class="meter"><i style="width:${perc}%"></i></div>
+    ${b.movimenti.length ? `<div class="sec">Utilizzi</div><div class="hist">${b.movimenti.map(m =>
+      `<div><span>${fmtData(m.data)}</span><span>− ${eur.format(m.importo)}</span><span class="small">resta ${eur.format(m.residuoDopo)}</span></div>`).join('')}</div>` : ''}`;
+  const puòUsare = b.residuo > 0.004;
+  $('#dettFoot').innerHTML = `
+    ${puòUsare ? `<button class="btn pri grow" id="dUsa">Usa importo</button><button class="btn red grow" id="dTutto">Consuma tutto</button>` : ''}
+    ${b.movimenti.length ? `<button class="btn" id="dAnnUlt">Annulla ultimo utilizzo</button>` : ''}
+    <button class="btn" id="dMod">Modifica</button>
+    <button class="btn ghost" id="dDel">Elimina</button>`;
+  apri('#dlgDett');
+}
+function registraUso(b, importo) {
+  importo = r2(Math.min(importo, b.residuo));
+  b.residuo = r2(b.residuo - importo);
+  b.movimenti = (b.movimenti || []).concat([{ data: oggiISO(), importo, residuoDopo: b.residuo }]);
+  salvaBuono(b);
+  toast(b.residuo <= 0 ? `Buono ${b.codice} consumato` : `Usati ${eur.format(importo)} · restano ${eur.format(b.residuo)}`);
+}
+
+/* ---------------- modulo nuovo / modifica ---------------- */
+let inModifica = null, scadToccata = false;
+function apriForm(id) {
+  inModifica = id || null; scadToccata = false;
+  const b = id ? buoni[id] : null;
+  $('#frmTitle').textContent = b ? 'Modifica buono ' + b.codice : 'Nuovo buono';
+  const annoOra = new Date().getFullYear();
+  $('#f_codice').value = b ? b.codice : prossimoNumero(annoOra) + '/' + String(annoOra).slice(-2);
+  $('#f_data').value = b ? b.dataEmissione : oggiISO();
+  $('#f_scad').value = b ? b.scadenza : piuUnAnno(oggiISO());
+  $('#f_cliente').value = b ? b.cliente : '';
+  $('#f_tel').value = b ? b.telefono : '';
+  $('#f_valore').value = b ? String(b.valore).replace('.', ',') : '';
+  $('#f_residuo').value = b ? String(b.residuo).replace('.', ',') : '';
+  $('#f_note').value = b ? b.note : '';
+  $('#f_err').textContent = '';
+  aggiornaHintCodice();
+  apri('#dlgForm');
+  if (!b) setTimeout(() => { $('#f_codice').select(); }, 60);
+}
+function aggiornaHintCodice() {
+  const h = $('#f_hint'); const c = leggiCodice($('#f_codice').value);
+  if (!$('#f_codice').value.trim()) { h.className = 'hint'; h.textContent = ''; return; }
+  if (!c) { h.className = 'hint err'; h.textContent = 'Formato non riconosciuto: scrivi numero/anno, es. 7/25'; return; }
+  const dup = trovaCodice(c.codice, inModifica);
+  if (dup) { h.className = 'hint err'; h.textContent = `Il buono ${c.codice} esiste già (${dup.cliente || 'senza nome'})`; return; }
+  const d = $('#f_data').value;
+  if (d && +d.slice(0, 4) !== c.anno) { h.className = 'hint warn'; h.textContent = `Buono n. ${c.numero} del ${c.anno} — attenzione: la data di emissione è del ${d.slice(0, 4)}`; return; }
+  h.className = 'hint ok'; h.textContent = `✓ Buono n. ${c.numero} dell'anno ${c.anno}` + (c.anno < new Date().getFullYear() ? ' — verrà messo in ordine tra quelli del ' + c.anno : '');
+}
+
+/* ---------------- dettatura e lettura intelligente ---------------- */
+const MESI = { gennaio: 1, febbraio: 2, marzo: 3, aprile: 4, maggio: 5, giugno: 6, luglio: 7, agosto: 8, settembre: 9, ottobre: 10, novembre: 11, dicembre: 12 };
+const UNITA = { zero: 0, uno: 1, due: 2, tre: 3, quattro: 4, cinque: 5, sei: 6, sette: 7, otto: 8, nove: 9, dieci: 10, undici: 11, dodici: 12, tredici: 13, quattordici: 14, quindici: 15, sedici: 16, diciassette: 17, diciotto: 18, diciannove: 19 };
+const DECINE = [['venti', 20], ['vent', 20], ['trenta', 30], ['trent', 30], ['quaranta', 40], ['quarant', 40], ['cinquanta', 50], ['cinquant', 50], ['sessanta', 60], ['sessant', 60], ['settanta', 70], ['settant', 70], ['ottanta', 80], ['ottant', 80], ['novanta', 90], ['novant', 90]];
+function sotto100(w) {
+  if (w in UNITA) return UNITA[w];
+  for (const [p, v] of DECINE) if (w.startsWith(p)) {
+    const r = w.slice(p.length); if (r === '') return p.length > 5 || p === 'venti' ? v : null;
+    if (r in UNITA && UNITA[r] > 0 && UNITA[r] < 10) return v + UNITA[r];
+  }
+  return null;
+}
+function parolaInNumero(w) {
+  w = w.replace(/[éè]/g, 'e');
+  if (!/^[a-z]+$/.test(w)) return null;
+  let tot = 0, resto = w, m;
+  if ((m = resto.match(/^(.+?)mila(.*)$/))) { const k = parolaInNumero(m[1]); if (k == null || k < 2) return null; tot += k * 1000; resto = m[2]; }
+  else if (resto.startsWith('mille')) { tot += 1000; resto = resto.slice(5); }
+  if ((m = resto.match(/^(.*?)cento(.*)$/))) { let h = 1; if (m[1]) { h = sotto100(m[1]); if (h == null || h < 2 || h > 9) return null; } tot += h * 100; resto = m[2]; }
+  if (resto) { const v = sotto100(resto); if (v == null) return null; tot += v; }
+  else if (tot === 0) return null;
+  return tot;
+}
+function paroleInNumeri(testo) {
+  const tk = testo.match(/[a-zàèéìòù']+|\d+(?:[.,]\d+)?|[^\sa-zàèéìòù\d]/gi) || [];
+  const out = tk.map(t => { const n = parolaInNumero(t.toLowerCase()); return n == null ? { t } : { t: String(n), n, w: 1 }; });
+  // unisce "duemila venticinque", "cento e cinquanta"
+  for (let i = 0; i < out.length - 1; i++) {
+    const a = out[i]; if (!a.w || a.n % 100 !== 0) continue;
+    let j = i + 1; if (out[j].t === 'e' && out[j + 1] && out[j + 1].w) j++;
+    const b = out[j]; if (b && b.w && b.n < (a.n % 1000 === 0 ? 1000 : 100)) { a.n += b.n; a.t = String(a.n); out.splice(i + 1, j - i); i--; }
+  }
+  return ' ' + out.map(o => o.t).join(' ') + ' ';
+}
+const titolo = s => s.replace(/\s+/g, ' ').trim().replace(/(^|[\s'-])([a-zà-ù])/g, (m, p, c) => p + c.toUpperCase());
+const NUM = '(\\d+(?:[.,]\\d{1,2})?)';
+
+function analizzaTesto(testoOriginale) {
+  let t = paroleInNumeri(testoOriginale.toLowerCase().replace(/[’`]/g, "'"));
+  t = t.replace(/(\d)\s*(?:barra|slash|fratto|diviso|\/)\s*(\d)/g, '$1/$2');
+  const nomiMesi = Object.keys(MESI).join('|');
+  // date in parole: "3 marzo 2025", "primo marzo"
+  t = t.replace(new RegExp(`\\b(\\d{1,2}|primo)\\s+(?:di\\s+)?(${nomiMesi})(?:\\s+(?:del\\s+)?(\\d{4}|\\d{2})\\b)?`, 'g'), (m, d, mese, y) => {
+    const dd = d === 'primo' ? 1 : +d, mm = MESI[mese]; let yy = y ? +y : 0; if (yy && yy < 100) yy += 2000;
+    return ` §D${yy ? String(yy) : '0000'}-${pad(mm)}-${pad(dd)}§ `;
+  });
+  // date in cifre: 3/3/2025, 03.03.25
+  t = t.replace(/\b(\d{1,2})\s*[\/.\-]\s*(\d{1,2})\s*[\/.\-]\s*(\d{4}|\d{2})\b/g, (m, d, mm, y) => {
+    let yy = +y; if (yy < 100) yy += 2000; return ` §D${yy}-${pad(+mm)}-${pad(+d)}§ `;
+  });
+  const ieri = new Date(); ieri.setDate(ieri.getDate() - 1);
+  t = t.replace(/\boggi\b/g, ` §D${oggiISO()}§ `).replace(/\bieri\b/g, ` §D${isoDi(ieri)}§ `);
+
+  const RX_COD = /(?:\b(?:buono|codice|numero|n)\s*(?:numero\s*)?)?\b(\d{1,4})\s*(?:\/|\s(?:del|dell'anno|anno)\s)\s*(\d{4}|\d{2})\b(?![.,]\d)/g;
+  const pezzi = t.split(/\b(?:prossimo|successivo|altro|nuovo|secondo|terzo)\s+buono\b|\bpoi\b|[;\n]+/);
+  const segmenti = [];
+  pezzi.forEach(p => {
+    if (!p.trim()) return;
+    const trovati = [...p.matchAll(RX_COD)];
+    if (!trovati.length) { segmenti.push({ testo: p, cod: null }); return; }
+    trovati.forEach((m, i) => {
+      const inizio = i === 0 ? 0 : m.index;
+      const fine = i + 1 < trovati.length ? trovati[i + 1].index : p.length;
+      segmenti.push({ testo: p.slice(inizio, fine), cod: m });
+    });
+  });
+  return segmenti.map(estraiCampi).filter(x => x);
+}
+
+function estraiCampi(seg) {
+  let s = seg.testo;
+  const r = { codice: '', dataEmissione: '', cliente: '', telefono: '', valore: '', residuo: '', note: '' };
+  if (seg.cod) { s = s.replace(seg.cod[0], ' '); const c = leggiCodice(seg.cod[1] + '/' + seg.cod[2]); if (c) r.codice = c.codice; }
+  // data
+  const md = s.match(/§D(\d{4})-(\d{2})-(\d{2})§/);
+  if (md) {
+    let y = +md[1]; const c = leggiCodice(r.codice);
+    if (!y) y = c ? c.anno : new Date().getFullYear();
+    if (isoValida(y, +md[2], +md[3])) r.dataEmissione = y + '-' + md[2] + '-' + md[3];
+  }
+  s = s.replace(/§D[^§]*§/g, ' , ');
+  // note (va per ultima nel parlato)
+  const mn = s.match(/\bnot[ae]\s*:?\s*(.+)$/);
+  if (mn) { r.note = mn[1].replace(/\s+([,.;:])/g, '$1').trim().replace(/^[,.:]\s*/, ''); s = s.slice(0, mn.index); }
+  // telefono
+  let mt = s.match(/\b(?:numero di telefono|telefono|cellulare|cell|tel|recapito|numero)\s*:?\s*((?:\+\s*)?\d[\d\s]{5,}\d)/);
+  if (!mt) mt = s.match(/((?:\+\s*39\s*)?\b3\d{2}\s*\d{3}\s*\d{3,4}\b|\b0\d{1,3}\s*\d{5,8}\b)/);
+  if (mt) { r.telefono = mt[1].replace(/\s+/g, '').replace(/^(\+39)?(3\d{2})(\d+)$/, (m, p, a, b) => (p ? p + ' ' : '') + a + ' ' + b); s = s.replace(mt[0], ' , '); }
+  // residuo / già usato
+  let usato = null, esaurito = false;
+  const mr = s.match(new RegExp(`\\b(?:residuo|rimanente|rimangono|rimane|restano|resta|ancora|disponibile|saldo|avanzo)\\s*(?:di|da|:)?\\s*(?:€\\s*)?${NUM}\\s*(?:euro|€)?`));
+  if (mr) { r.residuo = num(mr[1]); s = s.replace(mr[0], ' , '); }
+  const mu = s.match(new RegExp(`\\b(?:usat[oi]|spes[oi]|consumat[oi]|utilizzat[oi])\\s*(?:già\\s*)?(?:per\\s*)?(?:€\\s*)?${NUM}\\s*(?:euro|€)?`));
+  if (mu) { usato = num(mu[1]); s = s.replace(mu[0], ' , '); }
+  if (/\b(?:esaurito|consumato tutto|tutto consumato|già usato|già consumato|usato tutto|annullato|interamente usato)\b/.test(s)) esaurito = true;
+  // valore
+  let mv = s.match(new RegExp(`\\b(?:valore|importo|vale|totale|ammontare|buono da|buono di)\\s*(?:di|da|:)?\\s*(?:€\\s*)?${NUM}`));
+  if (!mv) mv = s.match(new RegExp(`(?:€\\s*)${NUM}|${NUM}\\s*(?:euro|€)`));
+  if (mv) { r.valore = num(mv[1] || mv[2]); s = s.replace(mv[0], ' , '); }
+  // nome cliente
+  const STOP = "(?=\\s*(?:[,.;:]|\\b(?:telefono|cellulare|cell|tel|numero|valore|importo|vale|residuo|rimanente|rimang\\w*|rest\\w*|data|emess\\w*|scad\\w*|euro|buono|codice|in data|esaurito|usato|consumato)\\b|€|\\d|$))";
+  const mc = s.match(new RegExp("\\b(?:cliente|a nome di|intestat[oa] a|fatto da|acquistato da|comprato da|regalato da|da parte di|signora|signor|sig|nome)\\s*:?\\s*([a-zàèéìòù' ]+?)" + STOP));
+  if (mc) {
+    let n = mc[1].trim();
+    for (let k = 0; k < 4; k++) n = n.replace(/\s+(?:del|dell'|il|in|con|e|ed|di|da|data)$/, '').trim();
+    r.cliente = titolo(n);
+  }
+  if (r.valore !== '' && !isNaN(r.valore)) {
+    if (esaurito) r.residuo = 0;
+    else if (usato != null && r.residuo === '') r.residuo = r2(Math.max(0, r.valore - usato));
+    else if (r.residuo === '') r.residuo = r.valore;
+  }
+  if (!r.codice && !r.cliente && r.valore === '' && !r.telefono) return null;
+  return r;
+}
+
+/* ---------------- revisione prima del salvataggio ---------------- */
+let daRivedere = [];
+function apriRevisione(elenco, titoloRev) {
+  // ordina per codice, come in archivio
+  daRivedere = elenco.map(x => Object.assign({ includi: true }, x));
+  daRivedere.sort((a, b) => { const ca = leggiCodice(a.codice), cb = leggiCodice(b.codice); return (ca ? chiave(ca) : 9e9) - (cb ? chiave(cb) : 9e9); });
+  $('#revTitle').textContent = titoloRev || 'Controlla prima di salvare';
+  disegnaRevisione();
+  apri('#dlgRev');
+}
+function controllaVoce(x, i) {
+  const avv = [];
+  const c = leggiCodice(x.codice);
+  if (!c) avv.push(['err', 'Codice mancante o non valido']);
+  else {
+    if (trovaCodice(c.codice)) avv.push(['err', `Il ${c.codice} è già in archivio: non verrà salvato di nuovo`]);
+    if (daRivedere.some((y, j) => j !== i && y.includi && leggiCodice(y.codice) && leggiCodice(y.codice).codice === c.codice)) avv.push(['err', 'Codice ripetuto nella lista']);
+  }
+  if (!x.dataEmissione) avv.push(['err', 'Data di emissione mancante']);
+  else if (c && +x.dataEmissione.slice(0, 4) !== c.anno) avv.push(['warn', `La data è del ${x.dataEmissione.slice(0, 4)} ma il codice è del ${c.anno}`]);
+  const v = num(x.valore), rs = num(x.residuo);
+  if (!(v > 0)) avv.push(['err', 'Valore mancante']);
+  if (!isNaN(rs) && v > 0 && (rs < 0 || rs > v)) avv.push(['err', 'Il residuo non può superare il valore']);
+  if (!x.cliente) avv.push(['warn', 'Nome cliente mancante']);
+  return avv;
+}
+function disegnaRevisione() {
+  let validi = 0;
+  $('#revBody').innerHTML = (daRivedere.length ? '' : '<p>Non ho riconosciuto nessun buono nel testo. Prova a dire «buono 5 barra 26» seguito dai dati.</p>') +
+    daRivedere.map((x, i) => {
+      const avv = controllaVoce(x, i);
+      const bloccante = avv.some(a => a[0] === 'err');
+      if (x.includi && !bloccante) validi++;
+      const cl = !x.includi ? 's-grigio' : bloccante ? 's-rosso' : avv.length ? 's-arancio' : 's-verde';
+      return `<div class="rev ${cl}" data-i="${i}">
+        <div class="rhead"><b>${esc(x.codice || 'senza codice')}</b><label class="small"><input type="checkbox" data-k="includi" ${x.includi ? 'checked' : ''}> salva</label></div>
+        <div class="row2">
+          <label class="f">Codice<input data-k="codice" value="${esc(x.codice)}"></label>
+          <label class="f">Emissione<input type="date" data-k="dataEmissione" value="${esc(x.dataEmissione)}"></label>
+        </div>
+        <label class="f">Cliente<input data-k="cliente" value="${esc(x.cliente)}"></label>
+        <div class="row2">
+          <label class="f">Telefono<input type="tel" data-k="telefono" value="${esc(x.telefono)}"></label>
+          <label class="f">Scadenza<input type="date" value="${esc(piuUnAnno(x.dataEmissione))}" disabled></label>
+        </div>
+        <div class="row2">
+          <label class="f">Valore €<input inputmode="decimal" data-k="valore" value="${esc(x.valore === '' ? '' : String(x.valore).replace('.', ','))}"></label>
+          <label class="f">Residuo €<input inputmode="decimal" data-k="residuo" value="${esc(x.residuo === '' ? '' : String(x.residuo).replace('.', ','))}"></label>
+        </div>
+        ${x.note ? `<label class="f">Note<input data-k="note" value="${esc(x.note)}"></label>` : ''}
+        <div class="avv">${avv.map(a => `<div class="hint ${a[0]}">• ${esc(a[1])}</div>`).join('')}</div>
+      </div>`;
+    }).join('');
+  $('#revSalva').textContent = validi ? `Salva ${validi} buon${validi === 1 ? 'o' : 'i'}` : 'Niente da salvare';
+  $('#revSalva').disabled = !validi;
+}
+function salvaRevisione() {
+  let n = 0;
+  daRivedere.forEach((x, i) => {
+    if (!x.includi || controllaVoce(x, i).some(a => a[0] === 'err')) return;
+    const c = leggiCodice(x.codice), v = r2(num(x.valore));
+    let rs = num(x.residuo); if (isNaN(rs)) rs = v;
+    salvaBuono({
+      id: uid(), codice: c.codice, numero: c.numero, anno: c.anno,
+      dataEmissione: x.dataEmissione, scadenza: piuUnAnno(x.dataEmissione),
+      cliente: titolo(x.cliente || ''), telefono: (x.telefono || '').trim(), valore: v, residuo: r2(rs),
+      note: x.note || '', movimenti: rs < v ? [{ data: x.dataEmissione, importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }] : [],
+      eliminato: false
+    }, true);
+    n++;
+  });
+  chiudi('#dlgRev'); chiudi('#dlgDetta'); $('#dettTxt').value = '';
+  render(); sincronizza();
+  toast(`${n} buon${n === 1 ? 'o salvato' : 'i salvati'} e messi in ordine`);
+}
+
+/* ---------------- microfono ---------------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, registra = false, baseTesto = '';
+function avviaMic() {
+  if (!SR) { $('#micStato').textContent = 'Questo browser non ha la dettatura: usa il microfono della tastiera dentro il riquadro di testo.'; $('#dettTxt').focus(); return; }
+  if (registra) { fermaMic(); return; }
+  rec = new SR(); rec.lang = 'it-IT'; rec.continuous = !/Android/i.test(navigator.userAgent); // su Android la modalità continua duplica il testo rec.interimResults = true;
+  baseTesto = $('#dettTxt').value.trim();
+  rec.onresult = e => {
+    let fin = '', tmp = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) fin += e.results[i][0].transcript; else tmp += e.results[i][0].transcript;
+    }
+    if (fin) baseTesto = (baseTesto + ' ' + fin).trim();
+    $('#dettTxt').value = (baseTesto + ' ' + tmp).trim();
+  };
+  rec.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { $('#micStato').textContent = 'Microfono non autorizzato: consenti il microfono per questa app nelle impostazioni del browser.'; registra = false; }
+    else if (e.error === 'network') { $('#micStato').textContent = 'La dettatura richiede internet.'; registra = false; }
+  };
+  rec.onend = () => { if (registra) { try { rec.start(); } catch (e) {} } else aggiornaMic(); };
+  registra = true; aggiornaMic();
+  try { rec.start(); } catch (e) {}
+}
+function fermaMic() { registra = false; if (rec) try { rec.stop(); } catch (e) {} aggiornaMic(); }
+function aggiornaMic() {
+  $('#micBtn').classList.toggle('rec', registra);
+  if (registra) $('#micStato').textContent = 'Ti ascolto… tocca di nuovo per fermare';
+  else if (!/Microfono|internet|browser/.test($('#micStato').textContent)) $('#micStato').textContent = 'Tocca il microfono e detta uno o più buoni';
+}
+
+/* ---------------- importa / esporta ---------------- */
+function scarica(nome, testo, tipo) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([testo], { type: tipo }));
+  a.download = nome; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function esportaCsv() {
+  const righe = [['Codice', 'Data emissione', 'Scadenza', 'Cliente', 'Telefono', 'Valore', 'Residuo', 'Stato', 'Note']];
+  attivi().sort((a, b) => chiave(a) - chiave(b)).forEach(b => righe.push([b.codice, fmtData(b.dataEmissione), fmtData(b.scadenza), b.cliente, b.telefono, String(b.valore).replace('.', ','), String(b.residuo).replace('.', ','), STATI[stato(b)].t, b.note]));
+  const csv = '﻿' + righe.map(r => r.map(c => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+  scarica(`buoni-regalo-${oggiISO()}.csv`, csv, 'text/csv');
+}
+function leggiCsv(testo) {
+  testo = testo.replace(/^﻿/, '');
+  const sep = (testo.split('\n')[0].match(/;/g) || []).length >= (testo.split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+  const righe = []; let riga = [], campo = '', q = false;
+  for (let i = 0; i < testo.length; i++) {
+    const ch = testo[i];
+    if (q) { if (ch === '"') { if (testo[i + 1] === '"') { campo += '"'; i++; } else q = false; } else campo += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep) { riga.push(campo); campo = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && testo[i + 1] === '\n') i++; riga.push(campo); righe.push(riga); riga = []; campo = ''; }
+    else campo += ch;
+  }
+  if (campo || riga.length) { riga.push(campo); righe.push(riga); }
+  return righe.filter(r => r.some(c => c.trim()));
+}
+function dataDaTesto(s) {
+  s = String(s || '').trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if (m && isoValida(+m[1], +m[2], +m[3])) return m[1] + '-' + pad(+m[2]) + '-' + pad(+m[3]);
+  m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/); if (m) { let y = +m[3]; if (y < 100) y += 2000; if (isoValida(y, +m[2], +m[1])) return y + '-' + pad(+m[2]) + '-' + pad(+m[1]); }
+  return '';
+}
+function importaFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    const testo = String(fr.result);
+    let elenco = [];
+    try {
+      if (/^\s*[\[{]/.test(testo)) {
+        const j = JSON.parse(testo); const arr = Array.isArray(j) ? j : (j.buoni || []);
+        elenco = arr.filter(b => !b.eliminato).map(b => ({ codice: b.codice, dataEmissione: b.dataEmissione, cliente: b.cliente || '', telefono: b.telefono || '', valore: b.valore, residuo: b.residuo, note: b.note || '' }));
+      } else {
+        const righe = leggiCsv(testo);
+        let intest = righe[0].map(h => h.toLowerCase().trim());
+        const haIntest = intest.some(h => /codice|cliente|valore/.test(h));
+        const idx = n => intest.findIndex(h => n.test(h));
+        const col = haIntest ? { codice: idx(/codice|numero/), data: idx(/emission|^data/), cliente: idx(/cliente|nome/), tel: idx(/tel|cell/), valore: idx(/valore|importo/), residuo: idx(/residuo|saldo/), note: idx(/note/) }
+                             : { codice: 0, data: 1, cliente: 2, tel: 3, valore: 4, residuo: 5, note: 6 };
+        (haIntest ? righe.slice(1) : righe).forEach(r => {
+          const g = k => col[k] >= 0 ? (r[col[k]] || '').trim() : '';
+          const c = leggiCodice(g('codice'));
+          const v = num(g('valore')), rs = num(g('residuo'));
+          elenco.push({ codice: c ? c.codice : g('codice'), dataEmissione: dataDaTesto(g('data')), cliente: titolo(g('cliente')), telefono: g('tel'), valore: isNaN(v) ? '' : v, residuo: isNaN(rs) ? (isNaN(v) ? '' : v) : rs, note: g('note') });
+        });
+      }
+    } catch (e) { toast('File non leggibile'); return; }
+    chiudi('#dlgImp');
+    apriRevisione(elenco, `Importazione: ${elenco.length} righe`);
+  };
+  fr.readAsText(file);
+}
+
+/* ---------------- finestre e messaggi ---------------- */
+function apri(sel) { const d = $(sel); if (!d.open) d.showModal(); }
+function chiudi(sel) { const d = $(sel); if (d.open) d.close(); }
+let tt;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800); }
+
+/* ---------------- eventi ---------------- */
+document.addEventListener('click', e => {
+  const cl = e.target.closest('[data-close]'); if (cl) { cl.closest('dialog').close(); return; }
+  const card = e.target.closest('.card'); if (card) { apriDettaglio(card.dataset.id); return; }
+  const st = e.target.closest('.stat'); if (st) { ui.stato = ui.stato === st.dataset.stato ? 'tutti' : st.dataset.stato; store(LS.ui, ui); render(); return; }
+  if (e.target.id === 'togliFiltro') { e.preventDefault(); ui.stato = 'tutti'; store(LS.ui, ui); render(); return; }
+  if (e.target.id === 'banImp') { apriImpostazioni(); return; }
+  const b = corrente && buoni[corrente];
+  switch (e.target.id) {
+    case 'dUsa': chiudi('#dlgDett'); apriUso(b); break;
+    case 'dTutto':
+      if (confirm(`Segnare il buono ${b.codice} come consumato (usati ${eur.format(b.residuo)})?`)) { registraUso(b, b.residuo); chiudi('#dlgDett'); }
+      break;
+    case 'dAnnUlt': {
+      const m = b.movimenti[b.movimenti.length - 1];
+      if (confirm(`Annullare l'utilizzo del ${fmtData(m.data)} di ${eur.format(m.importo)}?`)) {
+        b.residuo = r2(Math.min(b.valore, b.residuo + m.importo)); b.movimenti = b.movimenti.slice(0, -1); salvaBuono(b); apriDettaglio(b.id); toast('Utilizzo annullato');
+      }
+      break;
+    }
+    case 'dMod': chiudi('#dlgDett'); apriForm(b.id); break;
+    case 'dDel':
+      if (confirm(`Eliminare definitivamente il buono ${b.codice}?`)) { b.eliminato = true; salvaBuono(b); chiudi('#dlgDett'); toast('Buono eliminato'); }
+      break;
+  }
+});
+$('#q').value = ui.q;
+$('#q').addEventListener('input', e => { ui.q = e.target.value; store(LS.ui, ui); render(); });
+$('#selAnno').addEventListener('change', e => { ui.anno = e.target.value === 'tutti' ? 'tutti' : +e.target.value; store(LS.ui, ui); render(); });
+$('#btnOrd').addEventListener('click', () => { ui.ordine = ui.ordine === 'asc' ? 'desc' : 'asc'; store(LS.ui, ui); render(); });
+$('#btnNuovo').addEventListener('click', () => apriForm());
+$('#btnDetta').addEventListener('click', () => { apri('#dlgDetta'); });
+$('#btnSync').addEventListener('click', () => sincronizza(true));
+$('#btnImp').addEventListener('click', apriImpostazioni);
+
+// modulo
+$('#f_codice').addEventListener('input', () => {
+  const c = leggiCodice($('#f_codice').value);
+  if (c && !inModifica && c.anno !== new Date().getFullYear() && $('#f_data').value === oggiISO()) { $('#f_data').value = ''; $('#f_scad').value = ''; }
+  aggiornaHintCodice();
+});
+$('#f_codice').addEventListener('blur', () => { const c = leggiCodice($('#f_codice').value); if (c) { $('#f_codice').value = c.codice; aggiornaHintCodice(); } });
+$('#f_data').addEventListener('change', () => { $('#f_scad').value = piuUnAnno($('#f_data').value); aggiornaHintCodice(); });
+let valPrec = '';
+$('#f_valore').addEventListener('focus', () => { valPrec = $('#f_valore').value; });
+$('#f_valore').addEventListener('input', () => { if (!$('#f_residuo').value || $('#f_residuo').value === valPrec) $('#f_residuo').value = $('#f_valore').value; valPrec = $('#f_valore').value; });
+$('#frm').addEventListener('submit', e => {
+  e.preventDefault();
+  const err = m => { $('#f_err').className = 'hint err'; $('#f_err').textContent = m; };
+  const c = leggiCodice($('#f_codice').value); if (!c) return err('Codice non valido (es. 12/26)');
+  if (trovaCodice(c.codice, inModifica)) return err(`Il buono ${c.codice} esiste già`);
+  const data = $('#f_data').value; if (!data) return err('Inserisci la data di emissione');
+  const scad = $('#f_scad').value || piuUnAnno(data);
+  const v = num($('#f_valore').value); if (!(v > 0)) return err('Inserisci il valore del buono');
+  let rs = num($('#f_residuo').value); if (isNaN(rs)) rs = v;
+  if (rs < 0 || rs > v) return err('Il residuo deve essere tra 0 e il valore');
+  if (!$('#f_cliente').value.trim()) return err('Inserisci il nome del cliente');
+  if (+data.slice(0, 4) !== c.anno && !confirm(`Il codice è del ${c.anno} ma la data è del ${data.slice(0, 4)}. Salvo lo stesso?`)) return;
+  const b = inModifica ? Object.assign({}, buoni[inModifica]) : { id: uid(), movimenti: [], eliminato: false };
+  Object.assign(b, { codice: c.codice, numero: c.numero, anno: c.anno, dataEmissione: data, scadenza: scad, cliente: titolo($('#f_cliente').value), telefono: $('#f_tel').value.trim(), valore: r2(v), residuo: r2(rs), note: $('#f_note').value.trim() });
+  if (!inModifica && rs < v) b.movimenti = [{ data, importo: r2(v - rs), residuoDopo: r2(rs), nota: 'già usato prima dell\'inserimento' }];
+  salvaBuono(b);
+  chiudi('#dlgForm');
+  toast(inModifica ? 'Modifiche salvate' : `Buono ${c.codice} salvato`);
+});
+
+// utilizzo
+function apriUso(b) {
+  corrente = b.id;
+  $('#usoCod').textContent = b.codice; $('#usoDisp').textContent = eur.format(b.residuo);
+  $('#usoImp').value = ''; $('#usoHint').textContent = stato(b) === 'scaduto' ? 'Attenzione: questo buono è scaduto il ' + fmtData(b.scadenza) : '';
+  $('#usoHint').className = 'hint warn';
+  $('#usoQuick').innerHTML = `<button data-v="${b.residuo}">Tutto (${eur.format(b.residuo)})</button>` + [10, 20, 50].filter(v => v < b.residuo).map(v => `<button data-v="${v}">${eur.format(v)}</button>`).join('');
+  apri('#dlgUso'); setTimeout(() => $('#usoImp').focus(), 60);
+}
+$('#usoQuick').addEventListener('click', e => { const v = e.target.dataset.v; if (v) $('#usoImp').value = String(v).replace('.', ','); });
+$('#usoOk').addEventListener('click', () => {
+  const b = buoni[corrente]; const v = num($('#usoImp').value);
+  if (!(v > 0)) { $('#usoHint').className = 'hint err'; $('#usoHint').textContent = 'Scrivi l\'importo usato'; return; }
+  if (v > b.residuo + 0.004) { $('#usoHint').className = 'hint err'; $('#usoHint').textContent = 'Supera il residuo disponibile (' + eur.format(b.residuo) + ')'; return; }
+  registraUso(b, v); chiudi('#dlgUso');
+});
+
+// dettatura
+$('#micBtn').addEventListener('click', avviaMic);
+$('#dlgDetta').addEventListener('close', fermaMic);
+$('#dettPulisci').addEventListener('click', () => { $('#dettTxt').value = ''; baseTesto = ''; });
+$('#dettAnalizza').addEventListener('click', () => {
+  fermaMic();
+  const txt = $('#dettTxt').value.trim(); if (!txt) { toast('Detta o scrivi prima i dati del buono'); return; }
+  const el = analizzaTesto(txt);
+  el.forEach(x => { const c = leggiCodice(x.codice); if (!x.dataEmissione && c && c.anno === new Date().getFullYear()) x.dataEmissione = oggiISO(); });
+  apriRevisione(el);
+});
+$('#revBody').addEventListener('input', e => {
+  const k = e.target.dataset.k; if (!k) return;
+  const i = +e.target.closest('.rev').dataset.i;
+  daRivedere[i][k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+});
+$('#revBody').addEventListener('change', e => {
+  if (!e.target.dataset.k) return;
+  const i = +e.target.closest('.rev').dataset.i;
+  if (e.target.dataset.k === 'codice') { const c = leggiCodice(e.target.value); if (c) daRivedere[i].codice = c.codice; }
+  const pos = document.activeElement && document.activeElement.dataset ? [document.activeElement.closest('.rev') && document.activeElement.closest('.rev').dataset.i, document.activeElement.dataset.k] : null;
+  disegnaRevisione();
+  if (pos && pos[0] != null) { const el = document.querySelector(`.rev[data-i="${pos[0]}"] [data-k="${pos[1]}"]`); if (el && el.type !== 'checkbox') el.focus(); }
+});
+$('#revSalva').addEventListener('click', salvaRevisione);
+
+// impostazioni
+function apriImpostazioni() {
+  $('#cfgUrl').value = cfg.url || ARCHIVIO; $('#cfgPin').value = cfg.pin; $('#cfgHint').textContent = '';
+  $('#ver').textContent = VERSIONE;
+  const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  $('#btnInstalla').style.display = inApp ? 'none' : '';
+  $('#instTxt').textContent = inApp ? 'L\'app è già installata su questo dispositivo.' : (installEvt ? 'Puoi installare l\'app con il pulsante qui sotto.' : 'Per installare: menu del browser ⋮ → «Installa app» (o «Aggiungi a schermata Home»).');
+  apri('#dlgImp');
+}
+$('#cfgSalva').addEventListener('click', async () => {
+  const url = $('#cfgUrl').value.trim(), pin = $('#cfgPin').value.trim(); const h = $('#cfgHint');
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) { h.className = 'hint err'; h.textContent = 'L\'indirizzo deve iniziare con https://script.google.com/ e finire con /exec'; return; }
+  if (!pin) { h.className = 'hint err'; h.textContent = 'Inserisci il PIN'; return; }
+  h.className = 'hint'; h.textContent = 'Provo a collegarmi…';
+  const vecchio = cfg; cfg = { url, pin };
+  try {
+    await chiamaArchivio({ azione: 'ping' });
+    store(LS.cfg, cfg);
+    // i buoni già inseriti qui vengono inviati all'archivio
+    Object.values(buoni).forEach(b => { coda[b.id] = b; }); persisti();
+    h.className = 'hint ok'; h.textContent = '✓ Collegato all\'archivio condiviso';
+    await sincronizza(true);
+  } catch (e) { cfg = vecchio; h.className = 'hint err'; h.textContent = e.message === 'PIN errato' ? 'PIN errato' : 'Collegamento non riuscito: ' + e.message; }
+});
+$('#cfgScolleg').addEventListener('click', () => {
+  if (!confirm('Scollegare questo dispositivo dall\'archivio condiviso? I buoni restano nell\'archivio Google.')) return;
+  cfg = { url: '', pin: '' }; store(LS.cfg, cfg); buoni = {}; coda = {}; persisti(); render(); sincronizza(); chiudi('#dlgImp');
+});
+$('#expCsv').addEventListener('click', esportaCsv);
+$('#expJson').addEventListener('click', () => scarica(`buoni-regalo-backup-${oggiISO()}.json`, JSON.stringify({ versione: VERSIONE, creato: new Date().toISOString(), buoni: attivi() }, null, 1), 'application/json'));
+$('#impBtn').addEventListener('click', () => $('#impFile').click());
+$('#impFile').addEventListener('change', e => { if (e.target.files[0]) importaFile(e.target.files[0]); e.target.value = ''; });
+
+// installazione
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+$('#btnInstalla').addEventListener('click', async () => {
+  if (installEvt) { installEvt.prompt(); await installEvt.userChoice; installEvt = null; chiudi('#dlgImp'); }
+  else toast('Usa il menu del browser ⋮ → «Installa app» / «Aggiungi a schermata Home»');
+});
+
+// sincronizzazione automatica
+window.addEventListener('online', () => sincronizza());
+window.addEventListener('offline', () => sincronizza());
+document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizza(); });
+setInterval(() => { if (!document.hidden) sincronizza(); }, 60000);
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+Object.keys(buoni).forEach(id => { buoni[id] = normalizza(buoni[id]); });
+render(); renderBanner(); sincronizza();
+</script>
+</body>
+</html>
